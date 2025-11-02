@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java LinkedList සංකල්පය</title>
+    <title>Java LinkedList සංකල්පය (Code සහිතව)</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
 
     <style>
         /* 1. CSS Styles - ලස්සන UI එක සඳහා */
@@ -14,12 +14,12 @@
             --secondary-color: #0056b3;
             --danger-color: #dc3545;
             --success-color: #28a745;
-            --warning-color: #ffc107;
             --bg-color: #f4f7f6;
             --text-color: #333;
             --card-bg: #ffffff;
             --border-radius: 12px;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --code-bg: #282c34; /* IDE වගේ dark background එකක් */
         }
 
         body {
@@ -48,10 +48,6 @@
             color: var(--secondary-color);
             text-align: center;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
         /* Java Info Box */
@@ -63,15 +59,9 @@
             border-radius: 8px;
             font-size: 0.95em;
         }
-        .java-info p {
-            margin: 5px 0;
-        }
         .java-info code {
-            background: #d1ecff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-            color: #004a99;
+            background: #d1ecff; padding: 2px 6px;
+            border-radius: 4px; font-weight: 600; color: #004a99;
         }
 
         /* Controls */
@@ -80,7 +70,7 @@
             padding: 20px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
@@ -97,7 +87,6 @@
             border: 2px solid #ddd;
             border-radius: 8px 0 0 8px;
             font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
         }
         #nodeValue:focus {
             outline: none;
@@ -127,11 +116,51 @@
 
         #addFirstBtn { background-color: var(--success-color); }
         #addLastBtn { background-color: var(--primary-color); }
-        #removeBtn { 
-            background-color: var(--danger-color);
-            border-radius: 0 8px 8px 0; /* Attach to input */
-        }
+        #removeBtn { background-color: var(--danger-color); border-radius: 0 8px 8px 0; }
         #resetBtn { background-color: #6c757d; grid-column: 1 / -1; }
+
+        /* --- අලුතින් එකතු කළ Code Explanation Box එක --- */
+        .code-explanation {
+            background-color: var(--code-bg);
+            color: #abb2bf;
+            padding: 0; /* JS වලින් පාලනය කරයි */
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-family: 'Fira Code', 'Consolas', 'monospace';
+            font-size: 1.1em;
+            line-height: 1.6;
+            
+            /* Animation */
+            opacity: 0;
+            transform: translateY(10px);
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out, max-height 0.4s ease-out, padding 0.4s ease-out;
+        }
+        /* JS වලින් .visible class එක එකතු කළ විට */
+        .code-explanation.visible {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 200px;
+            padding: 20px;
+        }
+        /* Code එක ඇතුළත syntax highlighting */
+        .code-explanation pre {
+            margin: 0; padding: 0; background: transparent; color: inherit;
+        }
+        .java-code-line {
+            color: #61afef; /* Java method වර්ණය */
+        }
+        .java-code-line .string {
+            color: #98c379; /* String අගය වර්ණය */
+        }
+        .sinhala-comment-line {
+            color: #5c6370; /* Comment වර්ණය (අළු) */
+            display: block;
+            margin-top: 8px;
+        }
+        /* ------------------------------------------- */
+
 
         /* Visualization Area */
         .visualization {
@@ -144,12 +173,18 @@
             box-sizing: border-box;
             display: flex;
             align-items: center;
-            overflow-x: auto; /* Handle overflow if list gets long */
+            overflow-x: auto;
         }
 
         #listContainer {
             display: flex;
             align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .node {
@@ -167,63 +202,37 @@
             margin: 0 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             position: relative;
-            animation: fadeIn 0.5s ease;
+            animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
         }
         .node::before {
             content: 'data';
-            font-size: 10px;
-            color: #555;
-            font-weight: 400;
-            position: absolute;
-            top: 12px;
+            font-size: 10px; color: #555; position: absolute; top: 12px;
         }
         .node::after {
             content: 'next ➔';
-            font-size: 10px;
-            color: var(--primary-color);
-            font-weight: 600;
-            position: absolute;
-            bottom: 12px;
+            font-size: 10px; color: var(--primary-color); font-weight: 600;
+            position: absolute; bottom: 12px;
         }
 
         .pointer {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 0 8px;
-            animation: fadeIn 0.3s ease;
+            font-size: 32px; font-weight: bold; color: var(--primary-color); margin: 0 8px;
         }
-
         .null-node {
-            font-size: 20px;
-            font-weight: 600;
-            color: #999;
-            margin-left: 10px;
-            background: #eee;
-            padding: 10px 15px;
-            border-radius: 8px;
+            font-size: 20px; font-weight: 600; color: #999; margin-left: 10px;
+            background: #eee; padding: 10px 15px; border-radius: 8px;
             border: 2px dashed #ccc;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         /* Responsive */
         @media (max-width: 600px) {
-            .controls {
-                grid-template-columns: 1fr; /* Stack buttons on small screens */
-            }
-            .input-group {
-                flex-direction: column;
-            }
-            #nodeValue {
-                border-radius: 8px 8px 0 0;
-            }
-            #removeBtn {
-                border-radius: 0 0 8px 8px;
-            }
+            .controls { grid-template-columns: 1fr; }
+            .input-group { flex-direction: column; }
+            #nodeValue { border-radius: 8px 8px 0 0; }
+            #removeBtn { border-radius: 0 0 8px 8px; }
         }
 
     </style>
@@ -232,18 +241,8 @@
 
     <div class="container">
         <h1>🔗 Java LinkedList Visualizer</h1>
-
         <div class="java-info">
-            <p>මේක Java වල <code>import java.util.LinkedList;</code> class එක ක්‍රියාකරන විදිහ තේරුම්ගන්න හදපු visualization එකක්.</p>
-            <p>
-                Java වල <code>LinkedList&lt;String&gt; list = new LinkedList&lt;&gt;();</code> කියලා හදපුවම,
-                අපි පාවිච්චි කරන methods මෙහෙමයි:
-            </p>
-            <ul>
-                <li><code>list.addFirst("A");</code> - දාමයේ මුලට ("HEAD") එකතු කරයි.</li>
-                <li><code>list.addLast("B");</code> - දාමයේ අගට ("TAIL") එකතු කරයි.</li>
-                <li><code>list.remove("A");</code> - දාමයෙන් "A" අගය ඉවත් කරයි.</li>
-            </ul>
+            <p>Java <code>LinkedList</code> class එක ක්‍රියාකරන විදිහ තේරුම්ගන්න. අගයක් ඇතුළත් කර button එකක් click කළ විට, ඊට අදාළ Java code එක සහ සිදුවන දේ බලන්න.</p>
         </div>
 
         <div class="controls">
@@ -256,6 +255,9 @@
             <button id="addLastBtn">➕ addLast()</button>
             <button id="resetBtn">🔄 Reset List</button>
         </div>
+
+        <div id="codeExplanation" class="code-explanation">
+            </div>
 
         <div class="visualization">
             <div id="listContainer"></div>
@@ -272,93 +274,70 @@
         const removeBtn = document.getElementById('removeBtn');
         const resetBtn = document.getElementById('resetBtn');
         const listContainer = document.getElementById('listContainer');
+        const codeExplanation = document.getElementById('codeExplanation'); // අලුත් Box එක
 
-        // Node Class එක
-        // Java වල LinkedList එක ඇතුලෙත් මේ වගේ Node class එකක් තියෙනවා
+        // Node Class
         class Node {
             constructor(data, next = null) {
-                this.data = data; // දත්ත
-                this.next = next; // ඊළඟ Node එකට reference එක
+                this.data = data;
+                this.next = next;
             }
         }
 
-        // LinkedList Class එක
+        // LinkedList Class
         class LinkedList {
-            constructor() {
-                this.head = null; // දාමයේ ආරම්භය
-            }
-
-            // Java වල addFirst() method එක වගේ
-            addFirst(data) {
-                // අලුත් Node එකක් හදනවා.
-                // එහි 'next' එක විදියට දැනට තියෙන 'head' එක දෙනවා.
-                const newNode = new Node(data, this.head);
-                // දාමයේ අලුත් 'head' එක විදියට මේ අලුත් Node එක පත් කරනවා.
-                this.head = newNode;
-            }
-
-            // Java වල addLast() method එක වගේ
+            constructor() { this.head = null; }
+            addFirst(data) { this.head = new Node(data, this.head); }
             addLast(data) {
                 const newNode = new Node(data);
-
-                // List එක හිස් නම් (head = null), මේක තමයි head එක
-                if (!this.head) {
-                    this.head = newNode;
-                    return;
-                }
-
-                // List එකේ අගම Node එක (TAIL) හොයාගෙන යනවා
+                if (!this.head) { this.head = newNode; return; }
                 let current = this.head;
-                while (current.next) {
-                    current = current.next;
-                }
-                
-                // අන්තිම Node එකේ 'next' එකට අලුත් Node එක සම්බන්ධ කරනවා
+                while (current.next) { current = current.next; }
                 current.next = newNode;
             }
-
-            // Java වල remove(Object o) method එක වගේ
             remove(data) {
-                if (!this.head) {
-                    alert("List එක හිස්!");
-                    return false;
-                }
-
-                // ඉවත් කරන්න ඕනේ 'head' එකම නම්
+                if (!this.head) { return false; }
                 if (this.head.data === data) {
-                    this.head = this.head.next; // Head එක, ඊළඟ එකට මාරු කරනවා
+                    this.head = this.head.next;
                     return true;
                 }
-
-                // List එක මැදින් හොයනවා
                 let current = this.head;
                 let previous = null;
-
                 while (current && current.data !== data) {
                     previous = current;
                     current = current.next;
                 }
-
-                // අගය හම්බුනේ නැත්නම්
-                if (!current) {
-                    alert("අගය සොයාගත නොහැක!");
-                    return false;
-                }
-
-                // අගය හම්බුනාම, 'previous' node එකේ 'next' පොයින්ටරය
-                // 'current' node එක පන්නලා ඊළඟ එකට සම්බන්ධ කරනවා.
+                if (!current) { return false; } // හම්බුනේ නෑ
                 previous.next = current.next;
                 return true;
             }
         }
 
-        // අපේ ප්‍රධාන LinkedList එක හදාගැනීම
         let list = new LinkedList();
 
-        // දාමය තිරයේ පෙන්වන (Render) කරන function එක
-        function renderList() {
-            listContainer.innerHTML = ''; // පැරණි දර්ශනය ඉවත් කිරීම
+        // ***** අලුත් Function එක: Code Explanation පෙන්වීමට *****
+        function showExplanation(javaCode, sinhalaComment) {
+            // String අගය වෙනම වර්ණ ගන්වන්න
+            const sanitizedValue = javaCode.match(/"(.*?)"/);
+            let formattedCode = javaCode;
+            if (sanitizedValue) {
+                formattedCode = javaCode.replace(sanitizedValue[0], `<span class="string">${sanitizedValue[0]}</span>`);
+            }
 
+            // Box එකට content එක දානවා
+            codeExplanation.innerHTML = `
+<pre><code>
+    <span class="java-code-line">${formattedCode}</span>
+    <span class="sinhala-comment-line">${sinhalaComment}</span>
+</code></pre>`;
+            
+            // CSS animation එක trigger කරන්න 'visible' class එක දානවා
+            codeExplanation.classList.add('visible');
+        }
+
+        // දාමය තිරයේ පෙන්වන Function එක
+        function renderList() {
+            listContainer.innerHTML = ''; 
             let current = list.head;
 
             if (!current) {
@@ -366,27 +345,21 @@
                 return;
             }
 
-            // List එකේ 'head' එකේ ඉඳන් 'null' වෙනකම් යනවා
             while (current) {
-                // Node එක සඳහා HTML element එකක් හදනවා
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'node';
                 nodeElement.textContent = current.data;
                 listContainer.appendChild(nodeElement);
 
-                // ඊළඟ Node එකට "පොයින්ටරය" (ඊතලය)
                 if (current.next) {
                     const pointerElement = document.createElement('div');
                     pointerElement.className = 'pointer';
-                    pointerElement.textContent = '➔'; // ලස්සන ඊතලයක්
+                    pointerElement.textContent = '➔';
                     listContainer.appendChild(pointerElement);
                 }
-
-                // ඊළඟ node එකට යනවා
                 current = current.next;
             }
-
-            // දාමයේ අවසානය පෙන්වීමට 'NULL' එකතු කිරීම
+            
             const pointerElement = document.createElement('div');
             pointerElement.className = 'pointer';
             pointerElement.textContent = '➔';
@@ -398,13 +371,14 @@
             listContainer.appendChild(nullNode);
         }
 
-        // Button වලට Event Listeners එකතු කිරීම
+        // Event Listeners (showExplanation() calls සමඟ update කර ඇත)
         addFirstBtn.addEventListener('click', () => {
             const value = valueInput.value;
             if (value) {
                 list.addFirst(value);
                 renderList();
-                valueInput.value = ''; // Input එක clear කිරීම
+                showExplanation(`list.addFirst("${value}");`, `// "${value}" අගය list එකේ මුලට (HEAD) එකතු කලා.`);
+                valueInput.value = '';
                 valueInput.focus();
             } else {
                 alert("කරුණාකර අගයක් ඇතුලත් කරන්න.");
@@ -416,6 +390,7 @@
             if (value) {
                 list.addLast(value);
                 renderList();
+                showExplanation(`list.addLast("${value}");`, `// "${value}" අගය list එකේ අගට (TAIL) එකතු කලා.`);
                 valueInput.value = '';
                 valueInput.focus();
             } else {
@@ -426,10 +401,13 @@
         removeBtn.addEventListener('click', () => {
             const value = valueInput.value;
             if (value) {
-                if (list.remove(value)) {
+                if (list.remove(value)) { // ඉවත් කිරීම සාර්ථක නම් පමණක්
                     renderList();
+                    showExplanation(`list.remove("${value}");`, `// "${value}" අගය list එකෙන් සොයාගෙන ඉවත් කලා.`);
                     valueInput.value = '';
                     valueInput.focus();
+                } else {
+                    alert("අගය සොයාගත නොහැක!"); // ඉවත් කිරීමට අගය හම්බුනේ නැත්නම්
                 }
             } else {
                 alert("ඉවත් කිරීමට අගයක් ඇතුලත් කරන්න.");
@@ -437,8 +415,9 @@
         });
 
         resetBtn.addEventListener('click', () => {
-            list = new LinkedList(); // අලුත් හිස් List එකක් හැදීම
+            list = new LinkedList();
             renderList();
+            showExplanation(`list = new LinkedList<>();`, `// List එක clear කර, අලුත් හිස් එකක් සෑදුවා.`);
         });
 
         // ආරම්භයේදී List එක පෙන්වීම
