@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java LinkedList සංකල්පය (Code සහිතව)</title>
+    <title>Java LinkedList (Visualizer + Code)</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
 
     <style>
-        /* 1. CSS Styles - ලස්සන UI එක සඳහා */
         :root {
             --primary-color: #007bff;
             --secondary-color: #0056b3;
@@ -28,20 +27,6 @@
             color: var(--text-color);
             margin: 0;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 1000px;
-            padding: 30px;
-            box-sizing: border-box;
         }
 
         h1 {
@@ -50,12 +35,47 @@
             margin-bottom: 20px;
         }
 
-        /* Java Info Box */
+        /* --- අලුත්: Main Layout (කොටස් දෙකකට) --- */
+        .main-container {
+            display: flex;
+            gap: 25px;
+            width: 95%;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .visualizer-column {
+            flex: 2; /* වම් පැත්තට වැඩි ඉඩක් */
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .code-column {
+            flex: 1; /* දකුණු පැත්තට අඩු ඉඩක් */
+            background-color: var(--code-bg);
+            color: #abb2bf;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            overflow-y: auto;
+            max-height: 90vh; /* උස සීමා කිරීම */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        /* ------------------------------------- */
+        
+        /* වම් පැත්තේ කොටස් */
+        .visualizer-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
         .java-info {
             background: #e6f7ff;
             border-left: 5px solid var(--primary-color);
             padding: 15px 20px;
-            margin-bottom: 25px;
             border-radius: 8px;
             font-size: 0.95em;
         }
@@ -64,160 +84,84 @@
             border-radius: 4px; font-weight: 600; color: #004a99;
         }
 
-        /* Controls */
         .controls {
-            background-color: #fdfdfd;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 25px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-
         .input-group {
-            grid-column: 1 / -1; /* Full width */
-            display: flex;
+            grid-column: 1 / -1; display: flex;
         }
-
         #nodeValue {
-            flex-grow: 1;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px 0 0 8px;
+            flex-grow: 1; padding: 12px 15px;
+            border: 2px solid #ddd; border-radius: 8px 0 0 8px;
             font-size: 16px;
         }
         #nodeValue:focus {
-            outline: none;
-            border-color: var(--primary-color);
+            outline: none; border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
         }
-
         button {
-            padding: 12px 15px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            padding: 12px 15px; font-size: 16px; font-weight: 600;
+            color: #fff; border: none; border-radius: 8px;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
-
         #addFirstBtn { background-color: var(--success-color); }
         #addLastBtn { background-color: var(--primary-color); }
         #removeBtn { background-color: var(--danger-color); border-radius: 0 8px 8px 0; }
         #resetBtn { background-color: #6c757d; grid-column: 1 / -1; }
 
-        /* --- අලුතින් එකතු කළ Code Explanation Box එක --- */
         .code-explanation {
-            background-color: var(--code-bg);
-            color: #abb2bf;
-            padding: 0; /* JS වලින් පාලනය කරයි */
-            border-radius: 8px;
-            margin-bottom: 25px;
+            background-color: var(--code-bg); color: #abb2bf;
+            padding: 0; border-radius: 8px;
             font-family: 'Fira Code', 'Consolas', 'monospace';
-            font-size: 1.1em;
-            line-height: 1.6;
-            
-            /* Animation */
-            opacity: 0;
-            transform: translateY(10px);
-            max-height: 0;
+            font-size: 1.1em; line-height: 1.6;
+            opacity: 0; transform: translateY(10px); max-height: 0;
             overflow: hidden;
-            transition: opacity 0.4s ease-out, transform 0.4s ease-out, max-height 0.4s ease-out, padding 0.4s ease-out;
+            transition: all 0.4s ease-out;
         }
-        /* JS වලින් .visible class එක එකතු කළ විට */
         .code-explanation.visible {
-            opacity: 1;
-            transform: translateY(0);
-            max-height: 200px;
-            padding: 20px;
+            opacity: 1; transform: translateY(0);
+            max-height: 200px; padding: 20px;
         }
-        /* Code එක ඇතුළත syntax highlighting */
-        .code-explanation pre {
-            margin: 0; padding: 0; background: transparent; color: inherit;
-        }
-        .java-code-line {
-            color: #61afef; /* Java method වර්ණය */
-        }
-        .java-code-line .string {
-            color: #98c379; /* String අගය වර්ණය */
-        }
-        .sinhala-comment-line {
-            color: #5c6370; /* Comment වර්ණය (අළු) */
-            display: block;
-            margin-top: 8px;
-        }
-        /* ------------------------------------------- */
+        .code-explanation pre { margin: 0; padding: 0; background: transparent; }
+        .java-code-line { color: #61afef; }
+        .java-code-line .string { color: #98c379; }
+        .sinhala-comment-line { color: #5c6370; display: block; margin-top: 8px; }
 
-
-        /* Visualization Area */
         .visualization {
-            width: 100%;
-            min-height: 120px;
-            background-color: #fdfdfd;
-            border: 2px dashed #ccc;
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            overflow-x: auto;
+            width: 100%; min-height: 120px;
+            background-color: #fdfdfd; border: 2px dashed #ccc;
+            border-radius: var(--border-radius); padding: 20px;
+            box-sizing: border-box; display: flex;
+            align-items: center; overflow-x: auto;
         }
-
-        #listContainer {
-            display: flex;
-            align-items: center;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
+        #listContainer { display: flex; align-items: center; }
         .node {
-            background-color: #e0f7fa;
-            border: 2px solid #007bff;
-            border-radius: 50%; /* Circular nodes */
-            width: 70px;
-            height: 70px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            animation: popIn 0.3s ease-out;
+            background-color: #e0f7fa; border: 2px solid #007bff;
+            border-radius: 50%; width: 70px; height: 70px;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; font-size: 18px; font-weight: 600;
+            margin: 0 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative; animation: popIn 0.3s ease-out;
         }
         @keyframes popIn {
             from { opacity: 0; transform: scale(0.7); }
             to { opacity: 1; transform: scale(1); }
         }
         .node::before {
-            content: 'data';
-            font-size: 10px; color: #555; position: absolute; top: 12px;
+            content: 'data'; font-size: 10px; color: #555;
+            position: absolute; top: 12px;
         }
         .node::after {
-            content: 'next ➔';
-            font-size: 10px; color: var(--primary-color); font-weight: 600;
-            position: absolute; bottom: 12px;
+            content: 'next ➔'; font-size: 10px; color: var(--primary-color);
+            font-weight: 600; position: absolute; bottom: 12px;
         }
-
         .pointer {
             font-size: 32px; font-weight: bold; color: var(--primary-color); margin: 0 8px;
         }
@@ -226,65 +170,192 @@
             background: #eee; padding: 10px 15px; border-radius: 8px;
             border: 2px dashed #ccc;
         }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .controls { grid-template-columns: 1fr; }
-            .input-group { flex-direction: column; }
-            #nodeValue { border-radius: 8px 8px 0 0; }
-            #removeBtn { border-radius: 0 0 8px 8px; }
+        
+        /* දකුණු පැත්තේ Code Column එකේ Style */
+        .code-column h2 {
+            color: #fff;
+            margin-top: 0;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
         }
+        .code-column pre {
+            font-family: 'Fira Code', 'Consolas', 'monospace';
+            font-size: 0.9em;
+            line-height: 1.7;
+            white-space: pre-wrap; /* Code එක wrap කිරීම */
+        }
+        .code-column .java-comment { color: #5c6370; } /* Comment */
+        .code-column .java-keyword { color: #c678dd; } /* public, class, int, void, private... */
+        .code-column .java-class { color: #e5c07b; } /* Link, LinkedList */
+        .code-column .java-method { color: #61afef; } /* Link, insertFirst... */
+        .code-column .java-var { color: #d19a66; } /* this, null, true, false */
+        .code-column .java-string { color: #98c379; } /* "String" */
 
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🔗 Java LinkedList Visualizer</h1>
-        <div class="java-info">
-            <p>Java <code>LinkedList</code> class එක ක්‍රියාකරන විදිහ තේරුම්ගන්න. අගයක් ඇතුළත් කර button එකක් click කළ විට, ඊට අදාළ Java code එක සහ සිදුවන දේ බලන්න.</p>
-        </div>
+    <h1>🔗 Java LinkedList (Visualizer + Code)</h1>
 
-        <div class="controls">
-            <div class="input-group">
-                <input type="text" id="nodeValue" placeholder="අගයක් (value) ඇතුලත් කරන්න...">
-                <button id="removeBtn">🗑️ remove(value)</button>
+    <div class="main-container">
+
+        <div class="visualizer-column">
+
+            <div class="visualizer-card">
+                <div class="java-info">
+                    <p>
+                        වම් පැත්තේ ඇති Visualizer එක Java වල <code>java.util.LinkedList</code> class එකේ
+                        <code>addFirst()</code>, <code>addLast()</code>, <code>remove(value)</code> 
+                        වැනි methods simulate කරයි.
+                    </p>
+                    <p>
+                        දකුණු පැත්තේ ඇති code එක, එම සංකල්පයම <b>මුල සිට (from scratch)</b>
+                        Java වලින් ලියන ආකාරය පෙන්වයි.
+                    </p>
+                </div>
             </div>
-            
-            <button id="addFirstBtn">➕ addFirst()</button>
-            <button id="addLastBtn">➕ addLast()</button>
-            <button id="resetBtn">🔄 Reset List</button>
-        </div>
 
-        <div id="codeExplanation" class="code-explanation">
+            <div class="visualizer-card">
+                <div class="controls">
+                    <div class="input-group">
+                        <input type="text" id="nodeValue" placeholder="අගයක් (value) ඇතුලත් කරන්න...">
+                        <button id="removeBtn">🗑️ remove(value)</button>
+                    </div>
+                    <button id="addFirstBtn">➕ addFirst()</button>
+                    <button id="addLastBtn">➕ addLast()</button>
+                    <button id="resetBtn">🔄 Reset List</button>
+                </div>
             </div>
 
-        <div class="visualization">
-            <div id="listContainer"></div>
+            <div id="codeExplanation" class="code-explanation">
+                </div>
+
+            <div class="visualizer-card">
+                <div class="visualization">
+                    <div id="listContainer"></div>
+                </div>
+            </div>
+
         </div>
+
+        <div class="code-column">
+            <h2>Java Implementation (සම්පූර්ණ Code එක)</h2>
+            <pre>
+<span class="java-comment">// "Link" කියලා අලුත් class එකක් (වර්ගයක්) හදනවා. </span>
+<span class="java-comment">// මේක තමයි අපේ 'දුම්රිය පෙට්ටියේ' සැලැස්ම (Blueprint).</span>
+<span class="java-keyword">public class</span> <span class="java-class">Link</span> {
+
+    <span class="java-comment">// 1. දත්ත (Data) - පෙට්ටිය ඇතුළේ තියෙන 'බඩුව'.</span>
+    <span class="java-keyword">public int</span> data;
+    
+    <span class="java-comment">// 2. සබැඳිය (Pointer / Link) - 'කොක්ක'. </span>
+    <span class="java-comment">// ඊළඟ පෙට්ටිය තියෙන තැන.</span>
+    <span class="java-keyword">public</span> <span class="java-class">Link</span> nextLink;
+
+    <span class="java-comment">// Constructor (නිර්මාපකය) - අලුතෙන් 'Link' එකක් හදන හැමවෙලේම.</span>
+    <span class="java-keyword">public</span> <span class="java-method">Link</span>(<span class="java-keyword">int</span> data) {
+        <span class="java-comment">// 3. දත්ත පැවරීම</span>
+        <span class="java-var">this</span>.data = data;
+        
+        <span class="java-comment">// 4. සබැඳිය NULL කිරීම - අලුත් පෙට්ටිය දැනට අන්තිම එකයි.</span>
+        nextLink = <span class="java-var">null</span>;
+    }
+}
+
+<span class="java-comment">// "LinkedList" - සම්පූර්ණ 'දුම්රිය' කළමනාකරණය කරන class එක.</span>
+<span class="java-keyword">public class</span> <span class="java-class">LinkedList</span> {
+
+    <span class="java-comment">// 1. first (හෙවත් HEAD) - 'ඉංජිම'. </span>
+    <span class="java-comment">// පළවෙනි පෙට්ටිය අල්ලන් ඉන්නවා.</span>
+    <span class="java-keyword">private</span> <span class="java-class">Link</span> first;
+
+    <span class="java-comment">// 2. Constructor - අලුත් දුම්රියක් හදද්දී,</span>
+    <span class="java-keyword">public</span> <span class="java-method">LinkedList</span>() {
+        <span class="java-comment">// 'ඉංජිම' (first) හිස් (null). පෙට්ටි නෑ.</span>
+        first = <span class="java-var">null</span>;
+    }
+
+    <span class="java-comment">// 3. insertFirst (මුලට ඇතුළත් කිරීම) - (UI එකේ 'addFirst')</span>
+    <span class="java-keyword">public void</span> <span class="java-method">insertFirst</span>(<span class="java-keyword">int</span> val) {
+        <span class="java-comment">// 3a. අලුත් පෙට්ටියක් හදනවා.</span>
+        <span class="java-class">Link</span> newLink = <span class="java-keyword">new</span> <span class="java-class">Link</span>(val);
+        
+        <span class="java-comment">// 3b. අලුත් පෙට්ටියේ කොක්ක, පරණ 'first' එකට සම්බන්ධ කරනවා.</span>
+        newLink.nextLink = first;
+        
+        <span class="java-comment">// 3c. 'ඉංජිම' (first) දැන් අලුත් පෙට්ටිය අල්ලගන්නවා.</span>
+        first = newLink;
+    }
+
+    <span class="java-comment">// 4. insertLast (අගට ඇතුළත් කිරීම) - (UI එකේ 'addLast')</span>
+    <span class="java-keyword">public void</span> <span class="java-method">insertLast</span>(<span class="java-keyword">int</span> val) {
+        <span class="java-class">Link</span> newLink = <span class="java-keyword">new</span> <span class="java-class">Link</span>(val);
+
+        <span class="java-comment">// 4a. දුම්රිය හිස් නම් (first == null), මේක තමයි පළවෙනි එක.</span>
+        <span class="java-keyword">if</span> (first == <span class="java-var">null</span>) {
+            first = newLink;
+            <span class="java-keyword">return</span>;
+        }
+
+        <span class="java-comment">// 4b. දුම්රිය හිස් නැත්නම්, අන්තිම පෙට්ටිය හොයාගෙන යනවා.</span>
+        <span class="java-class">Link</span> current = first;
+        <span class="java-keyword">while</span> (current.nextLink != <span class="java-var">null</span>) {
+            current = current.nextLink; <span class="java-comment">// ඊළඟ පෙට්ටියට යනවා</span>
+        }
+        
+        <span class="java-comment">// 4c. අන්තිම පෙට්ටිය හමුවූ පසු, එහි 'කොක්ක' අලුත් පෙට්ටියට දානවා.</span>
+        current.nextLink = newLink;
+    }
+
+    <span class="java-comment">// 5. remove (අගයක් ඉවත් කිරීම) - (UI එකේ 'remove(value)')</span>
+    <span class="java-keyword">public</span> <span class="java-class">Link</span> <span class="java-method">remove</span>(<span class="java-keyword">int</span> value) {
+        <span class="java-comment">// 5a. 'ඉංජිම' (first) සහ 'ඊට පස්සේ' පෙට්ටිය අල්ලගන්නවා.</span>
+        <span class="java-class">Link</span> current = first;
+        <span class="java-class">Link</span> previous = first;
+
+        <span class="java-comment">// 5b. අගය හමුවනතුරු හෝ දුම්රිය අවසන් වනතුරු යනවා.</span>
+        <span class="java-keyword">while</span> (current.data != value) {
+            <span class="java-keyword">if</span> (current.nextLink == <span class="java-var">null</span>) {
+                <span class="java-keyword">return</span> <span class="java-var">null</span>; <span class="java-comment">// හම්බුනේ නෑ</span>
+            } <span class="java-keyword">else</span> {
+                previous = current; <span class="java-comment">// අයින් කරන්න කලින් එක මතක තියාගන්නවා</span>
+                current = current.nextLink; <span class="java-comment">// ඊළඟ එකට යනවා</span>
+            }
+        }
+
+        <span class="java-comment">// 5c. අගය හමුවුනා!</span>
+        <span class="java-keyword">if</span> (current == first) {
+            <span class="java-comment">// ඒක පළවෙනි පෙට්ටිය නම්, 'ඉංජිම' ඊළඟ එකට දානවා.</span>
+            first = first.nextLink;
+        } <span class="java-keyword">else</span> {
+            <span class="java-comment">// ඒක මැද එකක් නම්, 'කලින්' පෙට්ටියේ කොක්ක 'ඊළඟ' එකට දානවා.</span>
+            <span class="java-comment">// (current පෙට්ටිය මඟ අරිනවා)</span>
+            previous.nextLink = current.nextLink;
+        }
+        <span class="java-keyword">return</span> current; <span class="java-comment">// ඉවත් කළ පෙට්ටිය return කරනවා</span>
+    }
+}
+            </pre>
+        </div>
+
     </div>
 
     <script>
-        // 2. JavaScript - ක්‍රියාකාරීත්වය
-        
-        // DOM Elements තෝරාගැනීම
+        // DOM Elements
         const valueInput = document.getElementById('nodeValue');
         const addFirstBtn = document.getElementById('addFirstBtn');
         const addLastBtn = document.getElementById('addLastBtn');
         const removeBtn = document.getElementById('removeBtn');
         const resetBtn = document.getElementById('resetBtn');
         const listContainer = document.getElementById('listContainer');
-        const codeExplanation = document.getElementById('codeExplanation'); // අලුත් Box එක
+        const codeExplanation = document.getElementById('codeExplanation');
 
-        // Node Class
+        // Node Class (JS Simulation)
         class Node {
-            constructor(data, next = null) {
-                this.data = data;
-                this.next = next;
-            }
+            constructor(data, next = null) { this.data = data; this.next = next; }
         }
 
-        // LinkedList Class
+        // LinkedList Class (JS Simulation)
         class LinkedList {
             constructor() { this.head = null; }
             addFirst(data) { this.head = new Node(data, this.head); }
@@ -298,16 +369,14 @@
             remove(data) {
                 if (!this.head) { return false; }
                 if (this.head.data === data) {
-                    this.head = this.head.next;
-                    return true;
+                    this.head = this.head.next; return true;
                 }
                 let current = this.head;
                 let previous = null;
                 while (current && current.data !== data) {
-                    previous = current;
-                    current = current.next;
+                    previous = current; current = current.next;
                 }
-                if (!current) { return false; } // හම්බුනේ නෑ
+                if (!current) { return false; }
                 previous.next = current.next;
                 return true;
             }
@@ -315,42 +384,33 @@
 
         let list = new LinkedList();
 
-        // ***** අලුත් Function එක: Code Explanation පෙන්වීමට *****
+        // Show Explanation Function
         function showExplanation(javaCode, sinhalaComment) {
-            // String අගය වෙනම වර්ණ ගන්වන්න
             const sanitizedValue = javaCode.match(/"(.*?)"/);
             let formattedCode = javaCode;
             if (sanitizedValue) {
                 formattedCode = javaCode.replace(sanitizedValue[0], `<span class="string">${sanitizedValue[0]}</span>`);
             }
-
-            // Box එකට content එක දානවා
             codeExplanation.innerHTML = `
 <pre><code>
     <span class="java-code-line">${formattedCode}</span>
     <span class="sinhala-comment-line">${sinhalaComment}</span>
 </code></pre>`;
-            
-            // CSS animation එක trigger කරන්න 'visible' class එක දානවා
             codeExplanation.classList.add('visible');
         }
 
-        // දාමය තිරයේ පෙන්වන Function එක
+        // Render List Function
         function renderList() {
             listContainer.innerHTML = ''; 
             let current = list.head;
-
             if (!current) {
-                listContainer.innerHTML = '<span class="null-node">HEAD = null</span>';
-                return;
+                listContainer.innerHTML = '<span class="null-node">HEAD = null</span>'; return;
             }
-
             while (current) {
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'node';
                 nodeElement.textContent = current.data;
                 listContainer.appendChild(nodeElement);
-
                 if (current.next) {
                     const pointerElement = document.createElement('div');
                     pointerElement.className = 'pointer';
@@ -359,30 +419,25 @@
                 }
                 current = current.next;
             }
-            
             const pointerElement = document.createElement('div');
             pointerElement.className = 'pointer';
             pointerElement.textContent = '➔';
             listContainer.appendChild(pointerElement);
-
             const nullNode = document.createElement('span');
             nullNode.className = 'null-node';
             nullNode.textContent = 'null';
             listContainer.appendChild(nullNode);
         }
 
-        // Event Listeners (showExplanation() calls සමඟ update කර ඇත)
+        // Event Listeners
         addFirstBtn.addEventListener('click', () => {
             const value = valueInput.value;
             if (value) {
                 list.addFirst(value);
                 renderList();
-                showExplanation(`list.addFirst("${value}");`, `// "${value}" අගය list එකේ මුලට (HEAD) එකතු කලා.`);
-                valueInput.value = '';
-                valueInput.focus();
-            } else {
-                alert("කරුණාකර අගයක් ඇතුලත් කරන්න.");
-            }
+                showExplanation(`list.addFirst("${value}");`, `// (දකුණු පැත්තේ ඇති insertFirst() වැනි)`);
+                valueInput.value = ''; valueInput.focus();
+            } else { alert("කරුණාකර අගයක් ඇතුලත් කරන්න."); }
         });
 
         addLastBtn.addEventListener('click', () => {
@@ -390,28 +445,20 @@
             if (value) {
                 list.addLast(value);
                 renderList();
-                showExplanation(`list.addLast("${value}");`, `// "${value}" අගය list එකේ අගට (TAIL) එකතු කලා.`);
-                valueInput.value = '';
-                valueInput.focus();
-            } else {
-                alert("කරුණාකර අගයක් ඇතුලත් කරන්න.");
-            }
+                showExplanation(`list.addLast("${value}");`, `// (දකුණු පැත්තේ ඇති insertLast() වැනි)`);
+                valueInput.value = ''; valueInput.focus();
+            } else { alert("කරුණාකර අගයක් ඇතුලත් කරන්න."); }
         });
 
         removeBtn.addEventListener('click', () => {
             const value = valueInput.value;
             if (value) {
-                if (list.remove(value)) { // ඉවත් කිරීම සාර්ථක නම් පමණක්
+                if (list.remove(value)) {
                     renderList();
-                    showExplanation(`list.remove("${value}");`, `// "${value}" අගය list එකෙන් සොයාගෙන ඉවත් කලා.`);
-                    valueInput.value = '';
-                    valueInput.focus();
-                } else {
-                    alert("අගය සොයාගත නොහැක!"); // ඉවත් කිරීමට අගය හම්බුනේ නැත්නම්
-                }
-            } else {
-                alert("ඉවත් කිරීමට අගයක් ඇතුලත් කරන්න.");
-            }
+                    showExplanation(`list.remove("${value}");`, `// (දකුණු පැත්තේ ඇති remove() වැනි)`);
+                    valueInput.value = ''; valueInput.focus();
+                } else { alert("අගය සොයාගත නොහැක!"); }
+            } else { alert("ඉවත් කිරීමට අගයක් ඇතුලත් කරන්න."); }
         });
 
         resetBtn.addEventListener('click', () => {
@@ -420,9 +467,8 @@
             showExplanation(`list = new LinkedList<>();`, `// List එක clear කර, අලුත් හිස් එකක් සෑදුවා.`);
         });
 
-        // ආරම්භයේදී List එක පෙන්වීම
+        // Initial Render
         renderList();
-
     </script>
 
 </body>
