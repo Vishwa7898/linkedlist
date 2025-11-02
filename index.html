@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <title>Java Linked List Visualization</title>
+  <style>
+    .list { display: flex; align-items: center; margin: 50px 0; }
+    .node { border: 2px solid #2196f3; border-radius: 6px; padding: 20px; min-width: 40px; text-align: center; font-size: 2em; margin: 0 5px; position: relative; }
+    .arrow { width: 40px; height: 2px; background: #2196f3; margin: 0 5px; position: relative; }
+    .arrow::after { content: ''; position: absolute; right: 0; top: -7px; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid #2196f3; }
+    .highlight { background: #ffeb3b; transition: background 0.4s; }
+    .pointer { color: #e91e63; position: absolute; top: -20px; width: 100px; left: 0; font-size: 1em; }
+    .controls { margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Java Linked List Traversal - Interactive</h1>
+  <div class="list" id="linkedList">
+    <div class="node" id="node-0">1</div><div class="arrow"></div>
+    <div class="node" id="node-1">2</div><div class="arrow"></div>
+    <div class="node" id="node-2">3</div><div class="arrow"></div>
+    <div class="node" id="node-3">4</div><div class="arrow"></div>
+    <div class="node" id="node-4">5</div><div class="arrow"></div>
+    <div class="node" id="node-5">6</div><div class="arrow"></div>
+    <div class="node" id="node-6">7</div>
+    <span style="margin-left:10px;">null</span>
+  </div>
+  <div class="controls">
+    <button onclick="nextStep()">Next Step</button>
+    <span id="stepLabel" style="margin-left:15px;"></span>
+  </div>
+  <script>
+    const steps = [
+      {node1:0, node2:1, desc:'Step 1: node1, node2 අරගෙන linked list එකේ පළවෙනි දෙකේ position පහත් කරනවා.'},
+      {node1:0, node2:2, desc:'Step 2: node2 -> 3 වෙනවා, node1 තවම 1 දෙස කියල තියෙනවා.'},
+      {node1:5, node2:7, desc:'Step 3: node1 6 වෙනතෙක් යනවා, node2 7 යන්න null යනවා.'}
+    ];
+
+    let currentStep = -1;
+
+    function clearHighlights() {
+      document.querySelectorAll('.node').forEach(el => el.classList.remove('highlight'));
+      document.querySelectorAll('.pointer').forEach(el => el.remove());
+    }
+
+    function nextStep() {
+      clearHighlights();
+      currentStep++;
+      if(currentStep >= steps.length) {
+        document.getElementById('stepLabel').innerText = 'DONE!';
+        return;
+      }
+      let s = steps[currentStep];
+      if (s.node1 !== undefined) {
+        let n1 = document.getElementById('node-' + s.node1);
+        n1.classList.add('highlight');
+        let pointer1 = document.createElement('div');
+        pointer1.className = 'pointer';
+        pointer1.innerText = 'node1';
+        n1.appendChild(pointer1);
+      }
+      if (s.node2 !== undefined) {
+        let n2 = document.getElementById('node-' + s.node2);
+        n2.classList.add('highlight');
+        let pointer2 = document.createElement('div');
+        pointer2.className = 'pointer';
+        pointer2.innerText = 'node2';
+        n2.appendChild(pointer2);
+      }
+      document.getElementById('stepLabel').innerText = s.desc;
+    }
+  </script>
+</body>
+</html>
