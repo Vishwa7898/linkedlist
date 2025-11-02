@@ -1,74 +1,450 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-  <meta charset="UTF-8">
-  <title>Java Linked List Visualization</title>
-  <style>
-    .list { display: flex; align-items: center; margin: 50px 0; }
-    .node { border: 2px solid #2196f3; border-radius: 6px; padding: 20px; min-width: 40px; text-align: center; font-size: 2em; margin: 0 5px; position: relative; }
-    .arrow { width: 40px; height: 2px; background: #2196f3; margin: 0 5px; position: relative; }
-    .arrow::after { content: ''; position: absolute; right: 0; top: -7px; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid #2196f3; }
-    .highlight { background: #ffeb3b; transition: background 0.4s; }
-    .pointer { color: #e91e63; position: absolute; top: -20px; width: 100px; left: 0; font-size: 1em; }
-    .controls { margin-top: 30px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java LinkedList සංකල්පය</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* 1. CSS Styles - ලස්සන UI එක සඳහා */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #0056b3;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 1000px;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Java Info Box */
+        .java-info {
+            background: #e6f7ff;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+        .java-info p {
+            margin: 5px 0;
+        }
+        .java-info code {
+            background: #d1ecff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #004a99;
+        }
+
+        /* Controls */
+        .controls {
+            background-color: #fdfdfd;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .input-group {
+            grid-column: 1 / -1; /* Full width */
+            display: flex;
+        }
+
+        #nodeValue {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #nodeValue:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+        }
+
+        button {
+            padding: 12px 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        #addFirstBtn { background-color: var(--success-color); }
+        #addLastBtn { background-color: var(--primary-color); }
+        #removeBtn { 
+            background-color: var(--danger-color);
+            border-radius: 0 8px 8px 0; /* Attach to input */
+        }
+        #resetBtn { background-color: #6c757d; grid-column: 1 / -1; }
+
+        /* Visualization Area */
+        .visualization {
+            width: 100%;
+            min-height: 120px;
+            background-color: #fdfdfd;
+            border: 2px dashed #ccc;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            overflow-x: auto; /* Handle overflow if list gets long */
+        }
+
+        #listContainer {
+            display: flex;
+            align-items: center;
+        }
+
+        .node {
+            background-color: #e0f7fa;
+            border: 2px solid #007bff;
+            border-radius: 50%; /* Circular nodes */
+            width: 70px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            animation: fadeIn 0.5s ease;
+        }
+        .node::before {
+            content: 'data';
+            font-size: 10px;
+            color: #555;
+            font-weight: 400;
+            position: absolute;
+            top: 12px;
+        }
+        .node::after {
+            content: 'next ➔';
+            font-size: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+            position: absolute;
+            bottom: 12px;
+        }
+
+        .pointer {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .null-node {
+            font-size: 20px;
+            font-weight: 600;
+            color: #999;
+            margin-left: 10px;
+            background: #eee;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px dashed #ccc;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .controls {
+                grid-template-columns: 1fr; /* Stack buttons on small screens */
+            }
+            .input-group {
+                flex-direction: column;
+            }
+            #nodeValue {
+                border-radius: 8px 8px 0 0;
+            }
+            #removeBtn {
+                border-radius: 0 0 8px 8px;
+            }
+        }
+
+    </style>
 </head>
 <body>
-  <h1>Java Linked List Traversal - Interactive</h1>
-  <div class="list" id="linkedList">
-    <div class="node" id="node-0">1</div><div class="arrow"></div>
-    <div class="node" id="node-1">2</div><div class="arrow"></div>
-    <div class="node" id="node-2">3</div><div class="arrow"></div>
-    <div class="node" id="node-3">4</div><div class="arrow"></div>
-    <div class="node" id="node-4">5</div><div class="arrow"></div>
-    <div class="node" id="node-5">6</div><div class="arrow"></div>
-    <div class="node" id="node-6">7</div>
-    <span style="margin-left:10px;">null</span>
-  </div>
-  <div class="controls">
-    <button onclick="nextStep()">Next Step</button>
-    <span id="stepLabel" style="margin-left:15px;"></span>
-  </div>
-  <script>
-    const steps = [
-      {node1:0, node2:1, desc:'Step 1: node1, node2 අරගෙන linked list එකේ පළවෙනි දෙකේ position පහත් කරනවා.'},
-      {node1:0, node2:2, desc:'Step 2: node2 -> 3 වෙනවා, node1 තවම 1 දෙස කියල තියෙනවා.'},
-      {node1:5, node2:7, desc:'Step 3: node1 6 වෙනතෙක් යනවා, node2 7 යන්න null යනවා.'}
-    ];
 
-    let currentStep = -1;
+    <div class="container">
+        <h1>🔗 Java LinkedList Visualizer</h1>
 
-    function clearHighlights() {
-      document.querySelectorAll('.node').forEach(el => el.classList.remove('highlight'));
-      document.querySelectorAll('.pointer').forEach(el => el.remove());
-    }
+        <div class="java-info">
+            <p>මේක Java වල <code>import java.util.LinkedList;</code> class එක ක්‍රියාකරන විදිහ තේරුම්ගන්න හදපු visualization එකක්.</p>
+            <p>
+                Java වල <code>LinkedList&lt;String&gt; list = new LinkedList&lt;&gt;();</code> කියලා හදපුවම,
+                අපි පාවිච්චි කරන methods මෙහෙමයි:
+            </p>
+            <ul>
+                <li><code>list.addFirst("A");</code> - දාමයේ මුලට ("HEAD") එකතු කරයි.</li>
+                <li><code>list.addLast("B");</code> - දාමයේ අගට ("TAIL") එකතු කරයි.</li>
+                <li><code>list.remove("A");</code> - දාමයෙන් "A" අගය ඉවත් කරයි.</li>
+            </ul>
+        </div>
 
-    function nextStep() {
-      clearHighlights();
-      currentStep++;
-      if(currentStep >= steps.length) {
-        document.getElementById('stepLabel').innerText = 'DONE!';
-        return;
-      }
-      let s = steps[currentStep];
-      if (s.node1 !== undefined) {
-        let n1 = document.getElementById('node-' + s.node1);
-        n1.classList.add('highlight');
-        let pointer1 = document.createElement('div');
-        pointer1.className = 'pointer';
-        pointer1.innerText = 'node1';
-        n1.appendChild(pointer1);
-      }
-      if (s.node2 !== undefined) {
-        let n2 = document.getElementById('node-' + s.node2);
-        n2.classList.add('highlight');
-        let pointer2 = document.createElement('div');
-        pointer2.className = 'pointer';
-        pointer2.innerText = 'node2';
-        n2.appendChild(pointer2);
-      }
-      document.getElementById('stepLabel').innerText = s.desc;
-    }
-  </script>
+        <div class="controls">
+            <div class="input-group">
+                <input type="text" id="nodeValue" placeholder="අගයක් (value) ඇතුලත් කරන්න...">
+                <button id="removeBtn">🗑️ remove(value)</button>
+            </div>
+            
+            <button id="addFirstBtn">➕ addFirst()</button>
+            <button id="addLastBtn">➕ addLast()</button>
+            <button id="resetBtn">🔄 Reset List</button>
+        </div>
+
+        <div class="visualization">
+            <div id="listContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // 2. JavaScript - ක්‍රියාකාරීත්වය
+        
+        // DOM Elements තෝරාගැනීම
+        const valueInput = document.getElementById('nodeValue');
+        const addFirstBtn = document.getElementById('addFirstBtn');
+        const addLastBtn = document.getElementById('addLastBtn');
+        const removeBtn = document.getElementById('removeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const listContainer = document.getElementById('listContainer');
+
+        // Node Class එක
+        // Java වල LinkedList එක ඇතුලෙත් මේ වගේ Node class එකක් තියෙනවා
+        class Node {
+            constructor(data, next = null) {
+                this.data = data; // දත්ත
+                this.next = next; // ඊළඟ Node එකට reference එක
+            }
+        }
+
+        // LinkedList Class එක
+        class LinkedList {
+            constructor() {
+                this.head = null; // දාමයේ ආරම්භය
+            }
+
+            // Java වල addFirst() method එක වගේ
+            addFirst(data) {
+                // අලුත් Node එකක් හදනවා.
+                // එහි 'next' එක විදියට දැනට තියෙන 'head' එක දෙනවා.
+                const newNode = new Node(data, this.head);
+                // දාමයේ අලුත් 'head' එක විදියට මේ අලුත් Node එක පත් කරනවා.
+                this.head = newNode;
+            }
+
+            // Java වල addLast() method එක වගේ
+            addLast(data) {
+                const newNode = new Node(data);
+
+                // List එක හිස් නම් (head = null), මේක තමයි head එක
+                if (!this.head) {
+                    this.head = newNode;
+                    return;
+                }
+
+                // List එකේ අගම Node එක (TAIL) හොයාගෙන යනවා
+                let current = this.head;
+                while (current.next) {
+                    current = current.next;
+                }
+                
+                // අන්තිම Node එකේ 'next' එකට අලුත් Node එක සම්බන්ධ කරනවා
+                current.next = newNode;
+            }
+
+            // Java වල remove(Object o) method එක වගේ
+            remove(data) {
+                if (!this.head) {
+                    alert("List එක හිස්!");
+                    return false;
+                }
+
+                // ඉවත් කරන්න ඕනේ 'head' එකම නම්
+                if (this.head.data === data) {
+                    this.head = this.head.next; // Head එක, ඊළඟ එකට මාරු කරනවා
+                    return true;
+                }
+
+                // List එක මැදින් හොයනවා
+                let current = this.head;
+                let previous = null;
+
+                while (current && current.data !== data) {
+                    previous = current;
+                    current = current.next;
+                }
+
+                // අගය හම්බුනේ නැත්නම්
+                if (!current) {
+                    alert("අගය සොයාගත නොහැක!");
+                    return false;
+                }
+
+                // අගය හම්බුනාම, 'previous' node එකේ 'next' පොයින්ටරය
+                // 'current' node එක පන්නලා ඊළඟ එකට සම්බන්ධ කරනවා.
+                previous.next = current.next;
+                return true;
+            }
+        }
+
+        // අපේ ප්‍රධාන LinkedList එක හදාගැනීම
+        let list = new LinkedList();
+
+        // දාමය තිරයේ පෙන්වන (Render) කරන function එක
+        function renderList() {
+            listContainer.innerHTML = ''; // පැරණි දර්ශනය ඉවත් කිරීම
+
+            let current = list.head;
+
+            if (!current) {
+                listContainer.innerHTML = '<span class="null-node">HEAD = null</span>';
+                return;
+            }
+
+            // List එකේ 'head' එකේ ඉඳන් 'null' වෙනකම් යනවා
+            while (current) {
+                // Node එක සඳහා HTML element එකක් හදනවා
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+                nodeElement.textContent = current.data;
+                listContainer.appendChild(nodeElement);
+
+                // ඊළඟ Node එකට "පොයින්ටරය" (ඊතලය)
+                if (current.next) {
+                    const pointerElement = document.createElement('div');
+                    pointerElement.className = 'pointer';
+                    pointerElement.textContent = '➔'; // ලස්සන ඊතලයක්
+                    listContainer.appendChild(pointerElement);
+                }
+
+                // ඊළඟ node එකට යනවා
+                current = current.next;
+            }
+
+            // දාමයේ අවසානය පෙන්වීමට 'NULL' එකතු කිරීම
+            const pointerElement = document.createElement('div');
+            pointerElement.className = 'pointer';
+            pointerElement.textContent = '➔';
+            listContainer.appendChild(pointerElement);
+
+            const nullNode = document.createElement('span');
+            nullNode.className = 'null-node';
+            nullNode.textContent = 'null';
+            listContainer.appendChild(nullNode);
+        }
+
+        // Button වලට Event Listeners එකතු කිරීම
+        addFirstBtn.addEventListener('click', () => {
+            const value = valueInput.value;
+            if (value) {
+                list.addFirst(value);
+                renderList();
+                valueInput.value = ''; // Input එක clear කිරීම
+                valueInput.focus();
+            } else {
+                alert("කරුණාකර අගයක් ඇතුලත් කරන්න.");
+            }
+        });
+
+        addLastBtn.addEventListener('click', () => {
+            const value = valueInput.value;
+            if (value) {
+                list.addLast(value);
+                renderList();
+                valueInput.value = '';
+                valueInput.focus();
+            } else {
+                alert("කරුණාකර අගයක් ඇතුලත් කරන්න.");
+            }
+        });
+
+        removeBtn.addEventListener('click', () => {
+            const value = valueInput.value;
+            if (value) {
+                if (list.remove(value)) {
+                    renderList();
+                    valueInput.value = '';
+                    valueInput.focus();
+                }
+            } else {
+                alert("ඉවත් කිරීමට අගයක් ඇතුලත් කරන්න.");
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            list = new LinkedList(); // අලුත් හිස් List එකක් හැදීම
+            renderList();
+        });
+
+        // ආරම්භයේදී List එක පෙන්වීම
+        renderList();
+
+    </script>
+
 </body>
 </html>
